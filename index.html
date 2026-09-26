@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analyst Arena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --bg:#F0F8FF; --paper:#FFFFFF; --ink:#172A46; --muted:#52627F; --line:#D5E4F2;
+    --fn:#FF8A2B; --fn-soft:#FFEEDD; --fn-dk:#D96A10;        /* Functional = orange (the WHAT) */
+    --nf:#14B8A6; --nf-soft:#D7F6F1; --nf-dk:#0B8B7D;        /* Non-functional = teal (the HOW) */
+    --sun:#FFC83D; --sun-soft:#FFF3CC; --sun-ink:#7A5200; --sun-dk:#E3A812;
+    --alpha:#FF5C7A; --alpha-soft:#FFE3E9; --alpha-dk:#D63A59;
+    --beta:#4F63FF; --beta-soft:#E3E7FF; --beta-dk:#3446E0;
+    --mint:#12B886; --mint-soft:#D9F7EC; --mint-dk:#0B8F68;
+    --rose:#F0395A; --rose-soft:#FFE0E6;
+    --sky:#38BDF8; --sky-soft:#DDF3FE;
+    --grape:#9B5CF6; --grape-soft:#EFE6FF;
+    --display:"Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+    --body:"Nunito", "Segoe UI", system-ui, sans-serif;
+    --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{min-height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:16px; line-height:1.5;
+    background-image:
+      radial-gradient(circle at 6% 10%, #FFEEDD 0, transparent 30%),
+      radial-gradient(circle at 94% 6%, #D7F6F1 0, transparent 30%),
+      radial-gradient(circle at 88% 96%, #EFE6FF 0, transparent 28%),
+      radial-gradient(circle at 4% 94%, #FFF3CC 0, transparent 26%),
+      radial-gradient(#CADCEE 1.2px, transparent 1.3px);
+    background-size:auto,auto,auto,auto,22px 22px; background-attachment:fixed;
+  }
+  [hidden]{display:none!important}
+  .wrap{max-width:1180px; margin:0 auto; padding-inline:16px; padding-block:14px 40px}
+  button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
+  button:focus-visible, input:focus-visible{outline:3px solid var(--beta); outline-offset:3px}
+  button[disabled]{cursor:default}
+
+  .top{display:flex; flex-wrap:wrap; align-items:center; gap:12px 18px; justify-content:space-between; margin-bottom:16px}
+  .brand{display:flex; align-items:center; gap:10px}
+  .logo{width:46px; height:46px; border-radius:14px; background:var(--fn); display:grid; place-items:center; transform:rotate(-6deg); box-shadow:0 4px 0 var(--fn-dk)}
+  .logo svg{width:28px; height:28px}
+  .brand h1{font-family:var(--display); font-weight:800; font-size:30px; line-height:1; margin:0; letter-spacing:-.5px}
+  .brand small{display:block; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+  .scores{display:flex; gap:10px; flex-wrap:wrap}
+  .team{position:relative; display:flex; align-items:center; gap:10px; padding:6px 8px 6px 14px; border-radius:999px; background:var(--paper); border:2px solid var(--line); transition:transform .25s, box-shadow .25s}
+  .team .nm{font-weight:800; font-size:15px; max-width:12ch; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .team .pt{font-family:var(--display); font-weight:800; font-size:22px; min-width:52px; text-align:center; padding:0 10px; border-radius:999px; color:#fff; font-variant-numeric:tabular-nums; line-height:1.5}
+  .team.a .pt{background:var(--alpha)} .team.b .pt{background:var(--beta)}
+  .team.turn{transform:translateY(-2px)}
+  .team.a.turn{border-color:var(--alpha); box-shadow:0 0 0 4px var(--alpha-soft)}
+  .team.b.turn{border-color:var(--beta); box-shadow:0 0 0 4px var(--beta-soft)}
+  .team .yt{position:absolute; left:50%; bottom:-11px; transform:translateX(-50%); font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; padding:1px 8px; border-radius:999px; color:#fff; white-space:nowrap}
+  .team.a .yt{background:var(--alpha)} .team.b .yt{background:var(--beta)}
+  .bump{animation:bump .5s ease}
+  @keyframes bump{30%{transform:scale(1.3)}}
+  .tools{display:flex; gap:8px}
+  .iconbtn{width:40px; height:40px; border-radius:12px; background:var(--paper); border:2px solid var(--line); display:grid; place-items:center}
+  .iconbtn svg{width:20px; height:20px}
+
+  .rail{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px}
+  .chip{display:flex; align-items:center; gap:8px; padding:6px 14px; border-radius:999px; background:var(--paper); border:2px solid var(--line); font-weight:800; font-size:13px; color:var(--muted)}
+  .chip i{width:10px; height:10px; border-radius:50%; background:var(--line)}
+  .chip.on{color:var(--ink); border-color:var(--ink)} .chip.on i{background:var(--sun)}
+  .chip.done{color:var(--mint-dk)} .chip.done i{background:var(--mint)}
+
+  .card{background:var(--paper); border-radius:24px; border:2px solid var(--line); box-shadow:0 10px 0 -2px #D9E7F4}
+  .stage{padding:28px; min-height:560px; display:flex; flex-direction:column; position:relative; overflow:hidden}
+  @media (max-width:560px){ .stage{padding:20px} }
+
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 22px; border-radius:14px; font-weight:800; font-size:17px; transition:transform .12s, box-shadow .12s}
+  .btn:active{transform:translateY(3px)}
+  .btn.go{background:var(--sun); color:var(--ink); box-shadow:0 5px 0 var(--sun-dk)}
+  .btn.ink{background:var(--ink); color:#fff; box-shadow:0 5px 0 #0A1426}
+  .btn.ghost{background:var(--paper); border:2px solid var(--line); color:var(--muted)}
+  .btn.big{font-size:22px; padding:16px 34px; border-radius:18px}
+  .row{display:flex; flex-wrap:wrap; gap:12px; align-items:center}
+
+  .eyebrow{font-weight:800; font-size:13px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)}
+  .hero{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:20px; align-items:center}
+  @media (max-width:760px){ .hero{grid-template-columns:1fr} .hero .vs{display:none} }
+  .hero-title{font-family:var(--display); font-weight:800; font-size:clamp(42px,7vw,76px); line-height:.95; margin:6px 0 10px; letter-spacing:-1.5px; text-wrap:balance}
+  .lead-p{font-size:18px; color:var(--muted); max-width:56ch; margin:0 0 18px}
+  .vs{display:flex; align-items:center; gap:10px; transform:rotate(-3deg)}
+  .vs span{font-family:var(--display); font-weight:800; font-size:24px; padding:10px 18px; border-radius:16px; line-height:1}
+  .vs .w{background:var(--fn); color:#fff; box-shadow:0 5px 0 var(--fn-dk)}
+  .vs .h{background:var(--nf); color:#fff; box-shadow:0 5px 0 var(--nf-dk)}
+  .vs b{font-family:var(--display); font-size:22px; color:var(--rose)}
+  .rounds-list{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin:6px 0 18px}
+  @media (max-width:680px){ .rounds-list{grid-template-columns:1fr} }
+  .rcard{border-radius:16px; padding:14px 16px; border:2px solid var(--line); display:flex; flex-direction:column; gap:4px}
+  .rcard b{font-family:var(--display); font-size:20px; line-height:1.1}
+  .rcard span{font-size:14px; color:var(--muted)}
+  .rcard em{font-style:normal; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase}
+  .rc1{background:var(--fn-soft); border-color:#FFD2AE} .rc1 em{color:var(--fn-dk)}
+  .rc2{background:var(--grape-soft); border-color:#D8C6FF} .rc2 em{color:#6D34D9}
+  .rc3{background:var(--sun-soft); border-color:#FFE59A} .rc3 em{color:var(--sun-ink)}
+  .rules{display:flex; flex-wrap:wrap; gap:8px 18px; margin:0 0 18px; padding:0; list-style:none; font-weight:700; font-size:15px}
+  .rules li{display:flex; gap:8px; align-items:center}
+  .rules li i{width:22px; height:22px; border-radius:7px; display:grid; place-items:center; font-style:normal; font-size:12px; font-weight:800; color:#fff}
+  .names{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px; max-width:520px}
+  @media (max-width:480px){ .names{grid-template-columns:1fr} }
+  .names label{display:flex; flex-direction:column; gap:4px; font-weight:800; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
+  .names input{font:inherit; font-size:18px; font-weight:800; padding:10px 14px; border-radius:12px; border:2px solid var(--line); color:var(--ink); background:var(--paper); width:100%}
+  #nameA{border-color:var(--alpha)} #nameB{border-color:var(--beta)}
+
+  .qhead{display:flex; align-items:flex-start; justify-content:space-between; gap:14px; margin-bottom:14px}
+  .tag{display:inline-block; font-weight:800; font-size:13px; letter-spacing:.08em; text-transform:uppercase; padding:4px 12px; border-radius:999px}
+  .qhead h2{font-family:var(--display); font-weight:800; font-size:30px; line-height:1.05; margin:6px 0 0}
+  .count{font-size:14px; font-weight:700; color:var(--muted)}
+  .ptbadge{display:inline-block; margin-left:8px; font-weight:800; font-size:13px; padding:3px 10px; border-radius:999px; background:var(--ink); color:#fff}
+
+  .turnbar{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 16px; border-radius:14px; font-weight:800; font-size:18px; margin-bottom:16px}
+  .turnbar.a{background:var(--alpha-soft); color:var(--alpha-dk)} .turnbar.b{background:var(--beta-soft); color:var(--beta-dk)}
+  .turnbar .steal{background:var(--rose); color:#fff; padding:2px 12px; border-radius:999px; font-size:14px; letter-spacing:.06em; text-transform:uppercase; animation:bump .6s ease}
+  .turnbar .done{background:var(--ink); color:#fff; padding:2px 12px; border-radius:999px; font-size:14px}
+
+  .timer{position:relative; width:70px; height:70px; flex:none; cursor:pointer}
+  .timer svg{width:100%; height:100%; transform:rotate(-90deg)}
+  .timer .trk{fill:none; stroke:var(--line); stroke-width:8}
+  .timer .val{fill:none; stroke:var(--mint); stroke-width:8; stroke-linecap:round; transition:stroke-dashoffset .25s linear, stroke .3s}
+  .timer .num{position:absolute; inset:0; display:grid; place-items:center; font-family:var(--display); font-weight:800; font-size:24px; font-variant-numeric:tabular-nums}
+  .timer.warn .val{stroke:var(--sun)} .timer.out .val{stroke:var(--rose)} .timer.out .num{color:var(--rose)}
+  .timer .pz{position:absolute; bottom:-18px; left:0; right:0; text-align:center; font-size:11px; font-weight:800; color:var(--muted); letter-spacing:.06em; text-transform:uppercase}
+
+  /* Round 1: What or How */
+  .reqcard{margin:4px auto 22px; max-width:640px; width:100%; border-radius:22px; background:var(--paper); border:3px solid var(--ink); box-shadow:0 8px 0 var(--ink); padding:22px 26px 20px; position:relative; animation:drop .45s cubic-bezier(.3,1.6,.5,1) both}
+  .reqcard small{position:absolute; top:-14px; left:22px; font-size:12px; font-weight:800; letter-spacing:.1em; background:var(--sun); color:var(--ink); padding:2px 12px; border-radius:999px}
+  .reqcard p{margin:0; font-family:var(--display); font-weight:700; font-size:clamp(24px,3.2vw,34px); line-height:1.15; text-align:center; text-wrap:balance}
+  .reqcard .ctx{display:block; margin-top:8px; text-align:center; font-family:var(--body); font-size:14px; font-weight:700; color:var(--muted)}
+  @keyframes drop{from{transform:translateY(-24px) rotate(-3deg); opacity:0}}
+  .sides{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+  @media (max-width:560px){ .sides{grid-template-columns:1fr} }
+  .side{border-radius:22px; padding:18px 16px; display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; border:3px solid transparent; transition:transform .12s, border-color .2s, background .2s, opacity .2s}
+  .side:hover:not([disabled]){transform:translateY(-3px)}
+  .side .big{font-family:var(--display); font-weight:800; font-size:clamp(26px,3.4vw,36px); line-height:1}
+  .side .q{font-weight:800; font-size:15px; letter-spacing:.06em; text-transform:uppercase}
+  .side .hint{font-size:14px; font-weight:600; opacity:.85}
+  .side.fn{background:var(--fn); color:#fff; box-shadow:0 7px 0 var(--fn-dk)}
+  .side.nf{background:var(--nf); color:#fff; box-shadow:0 7px 0 var(--nf-dk)}
+  .side.right{border-color:var(--ink); box-shadow:0 7px 0 var(--ink), 0 0 0 6px var(--mint-soft)}
+  .side.wrong{opacity:.35; animation:shake .4s}
+  .side.dim{opacity:.35}
+  .tally{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; min-height:30px}
+  .tally span{font-size:13px; font-weight:800; padding:3px 10px; border-radius:999px}
+  .tally .fn{background:var(--fn-soft); color:var(--fn-dk)} .tally .nf{background:var(--nf-soft); color:var(--nf-dk)}
+  @keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+
+  /* Round 2: Mystery Method */
+  .case{display:grid; grid-template-columns:minmax(0,1.2fr) minmax(0,1fr); gap:18px; align-items:start}
+  @media (max-width:820px){ .case{grid-template-columns:1fr} }
+  .dossier{border-radius:20px; background:var(--grape-soft); padding:16px; display:grid; gap:10px; position:relative}
+  .dossier h3{margin:0 0 2px; font-family:var(--display); font-weight:800; font-size:22px; color:#6D34D9; display:flex; justify-content:space-between; align-items:center; gap:10px}
+  .worth{font-family:var(--display); font-weight:800; font-size:18px; background:var(--ink); color:#fff; padding:2px 12px; border-radius:999px; white-space:nowrap}
+  .clue{display:flex; gap:12px; align-items:flex-start; padding:12px 14px; border-radius:14px; background:var(--paper); font-weight:700; font-size:18px; line-height:1.3; box-shadow:0 3px 0 #D8C6FF}
+  .clue i{flex:none; width:30px; height:30px; border-radius:9px; background:var(--grape); color:#fff; display:grid; place-items:center; font-style:normal; font-family:var(--display); font-weight:800}
+  .clue.new{animation:drop .4s ease both}
+  .clue.locked{background:transparent; border:2px dashed #C9B3FF; box-shadow:none; color:#8F74C9; font-size:15px; justify-content:space-between; align-items:center}
+  .clue.locked i{background:#C9B3FF}
+  .methods{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  .mth{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:16px 10px; border-radius:18px; background:var(--paper); border:3px solid var(--line); box-shadow:0 5px 0 var(--line); font-weight:800; font-size:17px; line-height:1.15; text-align:center; transition:transform .12s, border-color .2s, background .2s, opacity .2s}
+  .mth:hover:not([disabled]){transform:translateY(-2px); border-color:var(--ink)}
+  .mth svg{width:38px; height:38px}
+  .mth.m-q svg{color:var(--sky)} .mth.m-i svg{color:var(--alpha)} .mth.m-o svg{color:var(--mint)} .mth.m-d svg{color:var(--fn)}
+  .mth.right{background:var(--mint-soft); border-color:var(--mint); box-shadow:0 5px 0 var(--mint)}
+  .mth.wrong{background:var(--rose-soft); border-color:var(--rose); box-shadow:0 5px 0 var(--rose); opacity:.55; animation:shake .4s}
+  .passbtn{margin-top:12px; width:100%}
+
+  /* Round 3 */
+  .prompt{font-family:var(--display); font-weight:700; font-size:clamp(24px,3.1vw,34px); line-height:1.15; margin:0 0 18px; text-wrap:balance}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+  @media (max-width:620px){ .opts{grid-template-columns:1fr} }
+  .opt{display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:16px; border:3px solid var(--line); background:var(--paper); font-weight:700; font-size:18px; text-align:left; box-shadow:0 5px 0 var(--line); transition:transform .12s, background .2s, border-color .2s, opacity .2s}
+  .opt:hover:not([disabled]){transform:translateY(-2px); border-color:var(--ink)}
+  .opt .L{flex:none; width:36px; height:36px; border-radius:10px; display:grid; place-items:center; font-family:var(--display); font-weight:800; font-size:20px; color:#fff}
+  .opt:nth-child(1) .L{background:var(--alpha)} .opt:nth-child(2) .L{background:var(--beta)} .opt:nth-child(3) .L{background:var(--mint)} .opt:nth-child(4) .L{background:var(--fn)}
+  .opt.right{background:var(--mint-soft); border-color:var(--mint); box-shadow:0 5px 0 var(--mint)}
+  .opt.wrong{background:var(--rose-soft); border-color:var(--rose); box-shadow:0 5px 0 var(--rose); animation:shake .4s}
+  .opt.gone{opacity:.25}
+  .lifeline{display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:12px; font-weight:800; font-size:15px; border:2px dashed var(--ink); background:var(--sun-soft)}
+  .lifeline[disabled]{opacity:.35; text-decoration:line-through}
+
+  .explain{margin-top:16px; padding:14px 18px; border-radius:16px; font-size:17px; font-weight:600; animation:drop .35s ease both}
+  .explain.ok{background:var(--mint-soft); color:#0A5F46}
+  .explain.no{background:var(--rose-soft); color:#9F1239}
+  .explain b{font-family:var(--display); font-size:20px; margin-right:6px}
+
+  .spacer{flex:1; min-height:18px}
+  .foot{margin-top:20px; padding-top:16px; border-top:2px dashed var(--line); display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between}
+  .foot .hint{font-weight:700; font-size:14px; color:var(--muted)}
+
+  .center{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:10px}
+  .bignum{font-family:var(--display); font-weight:800; font-size:120px; line-height:.9; letter-spacing:-4px}
+  .center h2{font-family:var(--display); font-weight:800; font-size:clamp(34px,5vw,52px); line-height:1; margin:0; text-wrap:balance}
+  .center p{font-size:19px; color:var(--muted); max-width:48ch; margin:0 0 10px}
+  .podium{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin:6px 0 8px}
+  .pod{min-width:170px; padding:14px 20px; border-radius:20px; border:3px solid var(--line)}
+  .pod .n{font-weight:800; font-size:16px}
+  .pod .s{font-family:var(--display); font-weight:800; font-size:50px; line-height:1}
+  .pod.a{border-color:var(--alpha); color:var(--alpha-dk); background:var(--alpha-soft)}
+  .pod.b{border-color:var(--beta); color:var(--beta-dk); background:var(--beta-soft)}
+  .pod.win{transform:scale(1.08); box-shadow:0 0 0 5px var(--sun)}
+  .crown{font-family:var(--display); font-weight:800; font-size:14px; letter-spacing:.1em; text-transform:uppercase; background:var(--sun); color:var(--ink); padding:2px 10px; border-radius:999px; display:inline-block; margin-bottom:6px}
+  .debrief{list-style:none; margin:8px 0 0; padding:0; display:grid; gap:10px; text-align:left; max-width:660px; width:100%}
+  .debrief li{display:flex; gap:12px; align-items:flex-start; padding:12px 16px; border-radius:14px; background:var(--mint-soft); font-weight:700; font-size:16px; animation:drop .4s ease both}
+  .debrief li:nth-child(2){animation-delay:.2s} .debrief li:nth-child(3){animation-delay:.4s} .debrief li:nth-child(4){animation-delay:.6s}
+  .debrief li i{flex:none; width:28px; height:28px; border-radius:50%; background:var(--mint); color:#fff; display:grid; place-items:center; font-style:normal; font-weight:800}
+  .debrief b{font-family:var(--display); font-size:18px}
+  .badge{display:inline-flex; align-items:center; gap:10px; padding:8px 18px; border-radius:999px; background:var(--ink); color:#fff; font-weight:800; letter-spacing:.06em; text-transform:uppercase; font-size:14px}
+  .badge i{width:22px; height:22px; border-radius:50%; background:var(--fn); display:grid; place-items:center; font-style:normal}
+
+  #fx{position:fixed; inset:0; width:100%; height:100%; pointer-events:none; z-index:50}
+  .toast{position:absolute; top:18px; left:50%; transform:translateX(-50%); font-family:var(--display); font-weight:800; font-size:26px; padding:6px 22px; border-radius:999px; background:var(--mint); color:#fff; animation:pop 1.3s ease forwards; pointer-events:none; white-space:nowrap; z-index:5}
+  @keyframes pop{0%{opacity:0; transform:translate(-50%,10px) scale(.8)}15%{opacity:1; transform:translate(-50%,0) scale(1.05)}80%{opacity:1}100%{opacity:0; transform:translate(-50%,-10px)}}
+  @media (prefers-reduced-motion: reduce){ *, *::before, *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important} }
+</style>
+</head>
+<body>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/></svg></div>
+      <div><small>Grade 12 · Unit 3 Lesson 5 · Wrap-up</small><h1>Analyst Arena</h1></div>
+    </div>
+    <div class="scores" aria-live="polite">
+      <div class="team a" id="teamA"><span class="nm" id="lblA">Team Alpha</span><span class="pt" id="scA">0</span><span class="yt" id="ytA" hidden>Your turn</span></div>
+      <div class="team b" id="teamB"><span class="nm" id="lblB">Team Beta</span><span class="pt" id="scB">0</span><span class="yt" id="ytB" hidden>Your turn</span></div>
+    </div>
+    <div class="tools">
+      <button class="iconbtn" id="soundBtn" title="Sound on/off" aria-label="Sound on/off"></button>
+      <button class="iconbtn" id="fsBtn" title="Full screen" aria-label="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+      <button class="iconbtn" id="homeBtn" title="Restart game" aria-label="Restart game"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button>
+    </div>
+  </header>
+  <nav class="rail" id="rail" aria-label="Rounds"></nav>
+  <main class="card stage" id="stage"></main>
+</div>
+
+<script>
+(() => {
+  const esc = s => String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+  /* ---------- Content (slides 1–15 only) ---------- */
+  const REQS = [
+    { t:'Send a confirmation email automatically when a customer places an order.', a:'fn', why:'It is an action the system performs: a functional requirement (automated order confirmation).' },
+    { t:'The system must work well for up to 10,000 users at the same time.', a:'nf', why:'This is about how well it performs under load: high-volume scalability.' },
+    { t:'Users get different authorization levels when they log in.', a:'fn', why:'Authentication levels are a core business function: something the system must do.' },
+    { t:'Customer passwords must be encrypted.', a:'nf', why:'Encryption is about security, one of the five quality pillars.' },
+    { t:'Generate a monthly sales report for the manager.', a:'fn', why:'Reporting requirements describe a task the system performs.' },
+    { t:'First-time users can find what they need without training.', a:'nf', why:'Easy navigation is usability: how the system behaves, not what it does.' },
+    { t:'Connect to an external payment service at checkout.', a:'fn', why:'External interfaces are a core business function.' },
+    { t:'The system recovers quickly after a crash.', a:'nf', why:'Recovery is reliability, one of the five quality pillars.' },
+    { t:'Apply the store’s discount rules when calculating the total.', a:'fn', why:'Business rules are functional: a specific action the system must carry out.' },
+    { t:'The store app runs on phones, tablets and laptops.', a:'nf', why:'Working across devices is compatibility, one of the five quality pillars.' },
+  ];
+  const METHODS = {
+    q:{ name:'Questionnaire', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M8.5 8.5l1.2 1.2 2.3-2.4M13.5 8.7H16M8.5 14l1.2 1.2 2.3-2.4M13.5 14.2H16"/></svg>' },
+    i:{ name:'Interview', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.5h10a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5H8l-3 2.5V13.5H3.5A1.5 1.5 0 0 1 2 12V7a1.5 1.5 0 0 1 1.5-1.5z"/><path d="M17.5 9.5h3A1.5 1.5 0 0 1 22 11v5a1.5 1.5 0 0 1-1.5 1.5H19V20l-3-2.5h-4.5A1.5 1.5 0 0 1 10 16v-.5"/></svg>' },
+    o:{ name:'Observation', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>' },
+    d:{ name:'Existing documents', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5A1.5 1.5 0 0 1 4.5 5H9l2 2h8.5A1.5 1.5 0 0 1 21 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 17.5z"/><path d="M8 13h8"/></svg>' },
+  };
+  const CASES = [
+    { a:'q', clues:['It can use electronic forms and special software.', 'It saves time and the results are easy to analyze.', 'People can answer anonymously, so their answers are more honest.'] },
+    { a:'o', clues:['It is less expensive than interviews and interrupts work less.', 'You only see what people do, not what they think.', 'The analyst watches users at work, but they may act differently when watched.'] },
+    { a:'i', clues:['People take it more seriously and see it as important.', 'It is expensive and time-consuming: travel, arranging, disrupting work.', 'Face to face, the analyst can explain or change a question on the spot.'] },
+    { a:'d', clues:['It can save time by reusing previous analysis.', 'Its value depends on the quality and accuracy of what you find.', 'The analyst studies order forms, stock lists and invoices.'] },
+    { a:'q', clues:['A drawback: limited depth and no descriptive data.', 'Unclear questions can lead to incorrect answers.', 'In the warm-up you built one on QuestionPro!'] },
+    { a:'i', clues:['Nervousness can affect the accuracy of the answers.', 'Best for a few users at different levels: clerk, analyst, executive.', 'A conversation where the analyst asks questions and follows up.'] },
+  ];
+  const QUIZ = [
+    { p:'Functional requirements describe…', o:['WHAT the system must do (actions)','HOW WELL the system must perform','Which programming language to use','How much the system costs'], a:0, why:'Functional = the “What”: task-oriented actions. Non-functional = the “How”: performance standards.' },
+    { p:'Which one is one of the five quality pillars of non-functional requirements?', o:['Reliability','Reporting','Business rules','Order confirmation'], a:0, why:'The five pillars are Performance, Security, Usability, Reliability and Compatibility.' },
+    { p:'In the analysis phase, who does the system analyst meet to find the requirements?', o:['The people who will use the system, at every level','Only the programmers','Only the company owner','Nobody, the analyst just reads the code'], a:0, why:'The analyst meets users at different levels (clerks, analysts, executives): everyone who will use the new system.' },
+    { p:'You are opening a new store and want to hear from 500 neighbors quickly. Best method?', o:['Questionnaire','Interview','Observation','Existing documents'], a:0, why:'Questionnaires collect data fast from large groups, and answers can be anonymous.' },
+    { p:'Which method causes zero disruption to users, but can miss informal daily practices?', o:['Examining existing documents','Interviews','Observation','Focus groups'], a:0, why:'Documents are reviewed without bothering users, but unwritten habits don’t appear in them.' },
+    { p:'Why can observation give a misleading picture?', o:['Users may act differently when they know they are watched','It is the most expensive method','It only works for large groups','Users must answer anonymously'], a:0, why:'Being observed can change natural behavior. Observation also shows actions, not thoughts.' },
+    { p:'The choice of data-collection method depends on…', o:['The nature of the organization’s work and the number of people','The color of the company logo','Whatever the analyst likes best','The programming language'], a:0, why:'The criteria change with the type of work and how many people you need to reach.' },
+    { p:'Why do analysts usually use more than one method?', o:['To get accurate and realistic results','Because one method is always illegal','To make the project take longer','To avoid talking to users'], a:0, why:'Each method has gaps, so combining them gives accurate and realistic outputs.' },
+  ];
+
+  const ROUNDS = [
+    { id:'req',  tag:'Round 1', name:'What or How?',   pts:10, time:20, cls:'rc1', bg:'var(--fn)',    ink:'#fff', count:REQS.length + ' requirements',
+      blurb:'A requirement lands on the table. Is it Functional (the WHAT) or Non-functional (the HOW)?' },
+    { id:'case', tag:'Round 2', name:'Mystery Method', pts:30, time:25, cls:'rc2', bg:'var(--grape)', ink:'#fff', count:CASES.length + ' mystery cases',
+      blurb:'Clues appear one by one. Name the data-gathering method early for 30, 20 or 10 points.' },
+    { id:'quiz', tag:'Round 3', name:'Analyst Showdown', pts:20, time:30, cls:'rc3', bg:'var(--sun)', ink:'var(--ink)', count:QUIZ.length + ' questions',
+      blurb:'Quiz-show questions on the whole lesson. Each team has one 50:50 lifeline.' },
+  ];
+
+  /* ---------- State ---------- */
+  const S = { screen:'intro', r:0, i:0, turn:'a', firstTurn:'a', steal:false, done:false, score:{a:0,b:0},
+              names:{a:'Team Alpha', b:'Team Beta'}, sound:true, life:{a:true,b:true}, tally:{fn:0,nf:0}, clue:0, tried:[], order:[] };
+  const $ = id => document.getElementById(id);
+  const stage = $('stage');
+  const other = t => t === 'a' ? 'b' : 'a';
+
+  /* ---------- Sound ---------- */
+  let ac;
+  const tone = (f, d = .12, type = 'sine', when = 0, vol = .12) => {
+    if (!S.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime + when;
+      o.type = type; o.frequency.value = f; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + d + .02);
+    } catch (e) {}
+  };
+  const sfx = {
+    good(){ [523,659,784,1047].forEach((f,i)=>tone(f,.16,'triangle',i*.08)); },
+    bad(){ tone(220,.25,'sawtooth',0,.08); tone(165,.3,'sawtooth',.12,.08); },
+    clue(){ tone(660,.07,'triangle',0,.08); tone(990,.1,'triangle',.06,.07); },
+    click(){ tone(600,.05,'triangle',0,.08); },
+    steal(){ [880,660,880,660].forEach((f,i)=>tone(f,.09,'square',i*.09,.05)); },
+    tick(){ tone(880,.05,'square',0,.04); },
+    fanfare(){ [392,523,659,784,659,784,1047].forEach((f,i)=>tone(f,.22,'triangle',i*.12,.1)); },
+  };
+  const soundIcon = () => $('soundBtn').innerHTML = S.sound
+    ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>'
+    : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z"/><path d="M17 9l5 6M22 9l-5 6"/></svg>';
+
+  /* ---------- Confetti ---------- */
+  const cv = $('fx'), cx = cv.getContext('2d'); let parts = [], raf = 0;
+  const fit = () => { cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; };
+  addEventListener('resize', fit); fit();
+  const COLORS = ['#FFC83D','#FF8A2B','#14B8A6','#4F63FF','#FF5C7A','#9B5CF6'];
+  const burst = (n = 90, x = innerWidth/2, y = innerHeight/3) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    for (let i = 0; i < n; i++) parts.push({ x, y, vx:(Math.random()-.5)*14, vy:Math.random()*-12-3, s:6+Math.random()*7, c:COLORS[i%COLORS.length], r:Math.random()*6, vr:(Math.random()-.5)*.3, life:120+Math.random()*40, ch: Math.random() < .18 ? '?' : null });
+    if (!raf) loop();
+  };
+  const loop = () => {
+    const d = devicePixelRatio; cx.clearRect(0,0,cv.width,cv.height);
+    parts = parts.filter(p => p.life-- > 0 && p.y < innerHeight + 40);
+    parts.forEach(p => {
+      p.vy += .35; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      cx.save(); cx.translate(p.x*d, p.y*d); cx.rotate(p.r); cx.fillStyle = p.c;
+      if (p.ch){ cx.font = `800 ${p.s*2.6*d}px sans-serif`; cx.fillText(p.ch, 0, 0); } else cx.fillRect(-p.s*d/2, -p.s*d/4, p.s*d, p.s*d/2);
+      cx.restore();
+    });
+    raf = parts.length ? requestAnimationFrame(loop) : (cx.clearRect(0,0,cv.width,cv.height), 0);
+  };
+  const toast = (txt, bg) => { const t = document.createElement('div'); t.className = 'toast'; t.textContent = txt; if (bg) t.style.background = bg; stage.appendChild(t); setTimeout(() => t.remove(), 1400); };
+  const teamColor = t => t === 'a' ? 'var(--alpha)' : 'var(--beta)';
+
+  /* ---------- Timer ---------- */
+  let tLeft = 0, tMax = 0, tRun = false, tInt = 0;
+  const C = 2 * Math.PI * 30;
+  const timerHTML = () => `<div class="timer" id="timer" title="Click to pause or resume" role="timer"><svg viewBox="0 0 70 70"><circle class="trk" cx="35" cy="35" r="30"/><circle class="val" id="tVal" cx="35" cy="35" r="30" stroke-dasharray="${C}" stroke-dashoffset="0"/></svg><div class="num" id="tNum"></div><div class="pz" id="tPz"></div></div>`;
+  const drawTimer = () => {
+    const el = $('timer'); if (!el) return;
+    $('tNum').textContent = Math.ceil(tLeft);
+    $('tVal').style.strokeDashoffset = C * (1 - tLeft / tMax);
+    el.classList.toggle('warn', tLeft <= 5 && tLeft > 0); el.classList.toggle('out', tLeft <= 0);
+    $('tPz').textContent = tLeft <= 0 ? 'time!' : (tRun ? '' : 'paused');
+  };
+  const startTimer = secs => {
+    clearInterval(tInt); if (!secs || !$('timer')) return;
+    tMax = tLeft = secs; tRun = true; drawTimer();
+    $('timer').onclick = () => { if (tLeft > 0 && !S.done) { tRun = !tRun; drawTimer(); } };
+    tInt = setInterval(() => {
+      if (!tRun) return;
+      tLeft = Math.max(0, tLeft - .25);
+      if (tLeft <= 5 && tLeft > 0 && tLeft % 1 === 0) sfx.tick();
+      if (tLeft <= 0) { tRun = false; clearInterval(tInt); sfx.bad(); }
+      drawTimer();
+    }, 250);
+  };
+  const stopTimer = () => { tRun = false; clearInterval(tInt); drawTimer(); };
+
+  /* ---------- Scores / turn ---------- */
+  const paintScores = bump => {
+    $('scA').textContent = S.score.a; $('scB').textContent = S.score.b;
+    $('lblA').textContent = S.names.a; $('lblB').textContent = S.names.b;
+    const live = S.screen === 'q' && !S.done;
+    $('teamA').classList.toggle('turn', live && S.turn === 'a'); $('teamB').classList.toggle('turn', live && S.turn === 'b');
+    $('ytA').hidden = !(live && S.turn === 'a'); $('ytB').hidden = !(live && S.turn === 'b');
+    if (bump) { const el = $(bump === 'a' ? 'scA' : 'scB'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
+  };
+  const addPts = (t, n) => { S.score[t] += n; paintScores(t); };
+  const turnBar = () => {
+    let extra = '';
+    if (S.done) extra = '<span class="done">Answer locked</span>';
+    else if (S.steal) extra = S.r === 1 ? '<span class="steal">Your chance!</span>' : '<span class="steal">Steal for half points</span>';
+    return `<div class="turnbar ${S.turn}" id="turnbar"><span>${esc(S.names[S.turn])}, your turn!</span>${extra}</div>`;
+  };
+  const refreshTurnBar = () => { const tb = $('turnbar'); if (tb) tb.outerHTML = turnBar(); paintScores(); };
+
+  const paintRail = () => {
+    $('rail').innerHTML = ROUNDS.map((R, i) => {
+      let st = '';
+      if (S.screen === 'final' || (S.screen !== 'intro' && i < S.r)) st = 'done';
+      else if (S.screen !== 'intro' && i === S.r) st = 'on';
+      return `<span class="chip ${st}"><i></i>${R.tag} · ${R.name}</span>`;
+    }).join('');
+  };
+
+  /* ---------- Screens ---------- */
+  const render = () => {
+    paintRail(); paintScores();
+    if (S.screen === 'intro') return renderIntro();
+    if (S.screen === 'round') return renderRoundIntro();
+    if (S.screen === 'q') return [renderReq, renderCase, renderQuiz][S.r]();
+    if (S.screen === 'final') return renderFinal();
+  };
+
+  const renderIntro = () => {
+    stopTimer();
+    stage.innerHTML = `
+      <div class="hero"><div>
+        <div class="eyebrow">Wrap-up mission · 3 rounds · 2 teams</div>
+        <h2 class="hero-title">Analyst Arena</h2>
+        <p class="lead-p">You are the system analysts for the new neighborhood store. Prove you know what the system must do, how well it must do it, and how to gather the facts.</p>
+      </div><div class="vs" aria-hidden="true"><span class="w">WHAT</span><b>vs</b><span class="h">HOW</span></div></div>
+      <div class="rounds-list">${ROUNDS.map(R => `<div class="rcard ${R.cls}"><em>${R.tag} · ${R.count}</em><b>${R.name}</b><span>${R.blurb}</span></div>`).join('')}</div>
+      <ul class="rules">
+        <li><i style="background:var(--ink)">1</i>Teams take turns</li>
+        <li><i style="background:var(--rose)">!</i>Wrong answer? The other team gets a chance to steal</li>
+        <li><i style="background:var(--grape)">?</i>Guess early in Round 2 for bigger points</li>
+      </ul>
+      <div class="names">
+        <label for="nameA">Team 1 name<input id="nameA" maxlength="18" value="${esc(S.names.a)}"></label>
+        <label for="nameB">Team 2 name<input id="nameB" maxlength="18" value="${esc(S.names.b)}"></label>
+      </div>
+      <div class="spacer"></div>
+      <div class="row"><button class="btn go big" id="startBtn">Enter the arena ▸</button></div>`;
+    const upd = () => { S.names.a = $('nameA').value.trim() || 'Team Alpha'; S.names.b = $('nameB').value.trim() || 'Team Beta'; paintScores(); };
+    $('nameA').addEventListener('input', upd); $('nameB').addEventListener('input', upd);
+    $('startBtn').onclick = () => { sfx.click(); upd(); S.screen = 'round'; S.r = 0; render(); };
+  };
+
+  const renderRoundIntro = () => {
+    stopTimer();
+    const R = ROUNDS[S.r];
+    const starter = S.r === 0 ? 'a' : (S.score.a === S.score.b ? (S.r % 2 ? 'b' : 'a') : (S.score.a < S.score.b ? 'a' : 'b'));
+    stage.innerHTML = `<div class="center">
+      <span class="tag" style="background:${R.bg}; color:${R.ink}">${R.tag}</span>
+      <div class="bignum" style="color:${R.bg}">${S.r + 1}</div>
+      <h2>${R.name}</h2><p>${R.blurb}</p>
+      <p style="font-weight:800; color:var(--ink); margin-top:-4px">${R.count} · ${S.r === 1 ? '30 / 20 / 10 points' : R.pts + ' points each'} · ${R.time}s per turn</p>
+      <p style="font-weight:800; margin-top:-8px; color:${starter === 'a' ? 'var(--alpha-dk)' : 'var(--beta-dk)'}">${esc(S.names[starter])} goes first${S.r ? ' (the team behind starts)' : ''}</p>
+      <button class="btn go big" id="goBtn">Let’s go ▸</button></div>`;
+    $('goBtn').onclick = () => {
+      sfx.click(); S.screen = 'q'; S.i = 0; S.turn = S.firstTurn = starter; S.steal = false; S.done = false; S.clue = 0; S.tried = [];
+      if (S.r === 0) S.order = shuffle(REQS);
+      if (S.r === 1) S.order = CASES.slice();
+      if (S.r === 2) S.order = QUIZ.map(q => ({ ...q, ord: shuffle([0,1,2,3]) }));
+      render();
+    };
+    $('goBtn').focus();
+  };
+
+  const head = (R, countTxt) => `
+    <div class="qhead"><div>
+      <span class="tag" style="background:${R.bg}; color:${R.ink}">${R.tag}</span><span class="ptbadge">${S.r === 1 ? '30 · 20 · 10' : '+' + R.pts}</span>
+      <h2>${R.name}</h2><div class="count">${countTxt}</div></div>${timerHTML()}</div>`;
+  const nextLabel = last => last ? (S.r === ROUNDS.length - 1 ? 'See the winners ▸' : 'Next round ▸') : 'Next ▸';
+  const advance = last => {
+    sfx.click(); stopTimer();
+    if (!last) { S.i++; S.firstTurn = other(S.firstTurn); S.turn = S.firstTurn; S.steal = false; S.done = false; S.clue = 0; S.tried = []; }
+    else if (S.r < ROUNDS.length - 1) { S.r++; S.screen = 'round'; }
+    else S.screen = 'final';
+    render();
+  };
+  const finish = (ok, why) => {
+    S.done = true; stopTimer(); refreshTurnBar();
+    stage.querySelectorAll('.side, .mth, .opt, #passBtn').forEach(b => b.disabled = true);
+    $('explain').innerHTML = `<div class="explain ${ok ? 'ok' : 'no'}"><b>${ok ? 'Correct!' : 'Nobody got it.'}</b>${why}</div>`;
+    $('nextBtn').hidden = false; $('nextBtn').focus({ preventScroll:true });
+    const ll = $('lifeBtn'); if (ll) ll.disabled = true;
+  };
+  const score = (pts, label) => { addPts(S.turn, pts); sfx.good(); burst(70); toast(`+${pts} ${S.names[S.turn]}${label ? ' · ' + label : ''}`, teamColor(S.turn)); };
+
+  /* ----- Round 1: What or How? ----- */
+  const renderReq = () => {
+    const R = ROUNDS[0], it = S.order[S.i], last = S.i === S.order.length - 1;
+    stage.innerHTML = head(R, `Requirement ${S.i + 1} of ${S.order.length}`) + turnBar() + `
+      <div class="reqcard"><small>NEW STORE SYSTEM · REQUIREMENT</small><p>${esc(it.t)}</p></div>
+      <div class="sides">
+        <button class="side fn" data-v="fn"><span class="q">The WHAT</span><span class="big">Functional</span><span class="hint">An action or task the system performs</span></button>
+        <button class="side nf" data-v="nf"><span class="q">The HOW</span><span class="big">Non-functional</span><span class="hint">How well it performs: speed, security, usability…</span></button>
+      </div>
+      <div class="tally"><span class="fn">Functional sorted: ${S.tally.fn}</span><span class="nf">Non-functional sorted: ${S.tally.nf}</span></div>
+      <div id="explain"></div><div class="spacer"></div>
+      <div class="foot"><span class="hint">Wrong answer? The other team can steal for half points.</span><button class="btn ink" id="nextBtn" hidden>${nextLabel(last)}</button></div>`;
+    stage.querySelectorAll('.side').forEach(btn => btn.onclick = () => {
+      if (S.done) return;
+      if (btn.dataset.v === it.a) {
+        btn.classList.add('right'); stage.querySelector(`.side:not([data-v="${it.a}"])`).classList.add('dim');
+        S.tally[it.a]++; score(S.steal ? R.pts / 2 : R.pts); finish(true, it.why);
+      } else if (!S.steal) {
+        // With two choices, a steal would be a free answer, so the stealing team must also say WHY.
+        btn.classList.add('wrong'); sfx.bad(); S.steal = true; S.turn = other(S.turn); sfx.steal(); refreshTurnBar();
+        $('explain').innerHTML = `<div class="explain no"><b>Not quite!</b>${esc(S.names[S.turn])}: tap the other side <u>and</u> explain why to steal ${R.pts / 2} points.</div>`;
+        startTimer(Math.round(R.time / 2));
+      }
+    });
+    $('nextBtn').onclick = () => advance(last);
+    startTimer(R.time);
+  };
+
+  /* ----- Round 2: Mystery Method ----- */
+  const renderCase = () => {
+    const R = ROUNDS[1], it = S.order[S.i], last = S.i === S.order.length - 1;
+    const worth = [30, 20, 10][Math.min(S.clue, 2)];
+    const clues = it.clues.map((c, n) => n <= S.clue
+      ? `<div class="clue ${n === S.clue ? 'new' : ''}"><i>${n + 1}</i><span>${esc(c)}</span></div>`
+      : `<div class="clue locked"><span style="display:flex; gap:12px; align-items:center"><i>${n + 1}</i>Locked clue</span><span>${[30,20,10][n]} pts</span></div>`).join('');
+    stage.innerHTML = head(R, `Case ${S.i + 1} of ${S.order.length}`) + turnBar() + `
+      <div class="case">
+        <div class="dossier"><h3>Which method is this? <span class="worth" id="worth">${worth} pts</span></h3>${clues}</div>
+        <div>
+          <div class="methods">${Object.entries(METHODS).map(([k, m]) => `<button class="mth m-${k} ${S.tried.includes(k) ? 'wrong' : ''}" data-m="${k}" ${S.tried.includes(k) ? 'disabled' : ''}>${m.icon}${m.name}</button>`).join('')}</div>
+          <button class="btn ghost passbtn" id="passBtn" ${S.clue >= 2 ? 'disabled' : ''}>Pass: reveal next clue for the other team</button>
+        </div>
+      </div>
+      <div id="explain"></div><div class="spacer"></div>
+      <div class="foot"><span class="hint">Wrong guess or pass = next clue revealed, and the other team plays.</span><button class="btn ink" id="nextBtn" hidden>${nextLabel(last)}</button></div>`;
+    const nextClue = () => {
+      if (S.clue < 2) { S.clue++; sfx.clue(); }
+      S.turn = other(S.turn); S.steal = true; renderCase();
+    };
+    stage.querySelectorAll('.mth').forEach(btn => btn.onclick = () => {
+      if (S.done) return;
+      const k = btn.dataset.m;
+      if (k === it.a) {
+        btn.classList.add('right'); score(worth, `clue ${S.clue + 1}`);
+        stage.querySelectorAll('.clue.locked').forEach((el, n) => { const c = it.clues[S.clue + 1 + n]; el.className = 'clue new'; el.innerHTML = `<i>${S.clue + 2 + n}</i><span>${esc(c)}</span>`; });
+        finish(true, `It’s <b>${METHODS[k].name}</b>.`);
+      } else {
+        btn.classList.add('wrong'); sfx.bad(); S.tried.push(k);
+        setTimeout(nextClue, 650);
+      }
+    });
+    $('passBtn').onclick = () => { if (!S.done) nextClue(); };
+    $('nextBtn').onclick = () => advance(last);
+    startTimer(R.time);
+  };
+
+  /* ----- Round 3: Analyst Showdown ----- */
+  const renderQuiz = () => {
+    const R = ROUNDS[2], Q = S.order[S.i], last = S.i === S.order.length - 1;
+    stage.innerHTML = head(R, `Question ${S.i + 1} of ${S.order.length}`) + turnBar() + `
+      <p class="prompt">${Q.p}</p>
+      <div class="opts">${Q.ord.map((oi, n) => `<button class="opt" data-o="${oi}"><span class="L">${'ABCD'[n]}</span><span>${esc(Q.o[oi])}</span></button>`).join('')}</div>
+      <div id="explain"></div><div class="spacer"></div>
+      <div class="foot"><button class="lifeline" id="lifeBtn">50:50 lifeline</button><button class="btn ink" id="nextBtn" hidden>${nextLabel(last)}</button></div>`;
+    const paintLife = () => { const b = $('lifeBtn'); b.disabled = S.done || !S.life[S.turn]; b.textContent = S.life[S.turn] ? `50:50 lifeline · ${S.names[S.turn]}` : `${S.names[S.turn]} used their 50:50`; };
+    paintLife();
+    $('lifeBtn').onclick = () => {
+      if (!S.life[S.turn] || S.done) return;
+      S.life[S.turn] = false; sfx.steal();
+      const wrong = [...stage.querySelectorAll('.opt')].filter(b => +b.dataset.o !== Q.a && !b.disabled);
+      shuffle(wrong).slice(0, Math.max(0, wrong.length - 1)).forEach(b => { b.disabled = true; b.classList.add('gone'); });
+      paintLife();
+    };
+    stage.querySelectorAll('.opt').forEach(btn => btn.onclick = () => {
+      if (S.done) return;
+      if (+btn.dataset.o === Q.a) { btn.classList.add('right'); score(S.steal ? R.pts / 2 : R.pts); finish(true, Q.why); }
+      else {
+        btn.classList.add('wrong'); btn.disabled = true; sfx.bad();
+        if (!S.steal) { S.steal = true; S.turn = other(S.turn); sfx.steal(); refreshTurnBar(); paintLife(); startTimer(Math.round(R.time / 2)); }
+        else { stage.querySelector(`.opt[data-o="${Q.a}"]`).classList.add('right'); finish(false, Q.why); }
+      }
+    });
+    $('nextBtn').onclick = () => advance(last);
+    startTimer(R.time);
+  };
+
+  /* ----- Final ----- */
+  const renderFinal = () => {
+    stopTimer(); paintScores();
+    const { a, b } = S.score, tie = a === b, win = a > b ? 'a' : 'b';
+    stage.innerHTML = `<div class="center">
+      <span class="badge"><i>✓</i>Certified System Analysts</span>
+      <h2>${tie ? 'It’s a tie! Both teams are hired.' : esc(S.names[win]) + ' wins the Analyst Arena!'}</h2>
+      <div class="podium">
+        <div class="pod a ${!tie && win === 'a' ? 'win' : ''}">${!tie && win === 'a' ? '<span class="crown">Lead analysts</span>' : ''}<div class="n">${esc(S.names.a)}</div><div class="s">${a}</div></div>
+        <div class="pod b ${!tie && win === 'b' ? 'win' : ''}">${!tie && win === 'b' ? '<span class="crown">Lead analysts</span>' : ''}<div class="n">${esc(S.names.b)}</div><div class="s">${b}</div></div>
+      </div>
+      <div class="eyebrow" style="margin-top:6px">What we learned today</div>
+      <ul class="debrief">
+        <li><i>✓</i><span><b>Functional vs non-functional.</b> Functional = WHAT the system does. Non-functional = HOW WELL it does it: performance, security, usability, reliability, compatibility.</span></li>
+        <li><i>✓</i><span><b>Four ways to gather data.</b> Questionnaires, interviews, observation and examining existing documents.</span></li>
+        <li><i>✓</i><span><b>Every method has trade-offs.</b> Each saves time, money or effort in one way and misses something in another.</span></li>
+        <li><i>✓</i><span><b>Choose wisely, and combine.</b> Pick methods by the organization’s work and the number of people, and use more than one for accurate results.</span></li>
+      </ul>
+      <div class="row" style="justify-content:center; margin-top:12px"><button class="btn ghost" id="againBtn">Play again</button></div>
+    </div>`;
+    sfx.fanfare(); burst(160); setTimeout(() => burst(120, innerWidth * .25, innerHeight * .4), 500); setTimeout(() => burst(120, innerWidth * .75, innerHeight * .4), 900);
+    $('againBtn').onclick = reset;
+  };
+
+  const reset = () => { Object.assign(S, { screen:'intro', r:0, i:0, turn:'a', steal:false, done:false, score:{a:0,b:0}, life:{a:true,b:true}, tally:{fn:0,nf:0}, clue:0, tried:[] }); render(); };
+
+  /* ---------- Wiring ---------- */
+  $('soundBtn').onclick = () => { S.sound = !S.sound; soundIcon(); };
+  $('fsBtn').onclick = () => { try { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen().catch(() => {}); } catch (e) {} };
+  $('homeBtn').onclick = () => {
+    const hb = $('homeBtn');
+    if (S.screen === 'intro' || hb.dataset.arm) { delete hb.dataset.arm; hb.style.borderColor = ''; reset(); return; }
+    hb.dataset.arm = 1; hb.title = 'Click again to restart'; hb.style.borderColor = 'var(--rose)';
+    setTimeout(() => { delete hb.dataset.arm; hb.style.borderColor = ''; hb.title = 'Restart game'; }, 2500);
+  };
+  soundIcon(); render();
+})();
+</script>
+</body>
+</html>
